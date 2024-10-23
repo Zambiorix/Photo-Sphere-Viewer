@@ -328,13 +328,23 @@ export class VirtualTourPlugin extends AbstractConfigurablePlugin<
                     throw utils.getAbortError();
                 }
 
+                let configOptions = typeof this.config.transitionOptions === 'function'
+                    ? this.config.transitionOptions(node, fromNode, fromLink)
+                    : this.config.transitionOptions;
+                if (typeof configOptions === 'boolean') {
+                    if (configOptions) {
+                        configOptions = null
+                    } else {
+                        this.state.loadingNode = null;
+                        throw utils.getAbortError();
+                    }
+                }
+
                 const transitionOptions: VirtualTourTransitionOptions = {
                     ...getConfig.defaults.transitionOptions,
                     rotateTo: fromLinkPosition,
                     zoomTo: fromLinkPosition ? this.viewer.getZoomLevel() : null, // prevents the adapter to apply InitialHorizontalFOVDegrees
-                    ...(typeof this.config.transitionOptions === 'function'
-                        ? this.config.transitionOptions(node, fromNode, fromLink)
-                        : this.config.transitionOptions),
+                    ...configOptions,
                     ...options,
                 };
 
